@@ -7,7 +7,7 @@ import Companion, { Mood, Species, Accessory } from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Magnetic from "@/components/Magnetic";
 import InstallButton from "@/components/InstallButton";
-import { Lightbulb, History as HistoryIcon, Mic } from "lucide-react";
+import { Lightbulb, History as HistoryIcon, Mic, HelpCircle } from "lucide-react";
 import { getAnimSetting, getCompanionUnlock } from "@/lib/storage";
 
 export default function Landing() {
@@ -57,6 +57,13 @@ export default function Landing() {
         <header className="flex items-center justify-between px-6 py-5 sm:px-10">
           <span className="font-display text-lg font-semibold tracking-tight">fade</span>
           <div className="flex items-center gap-3">
+            <Link
+              href="/how-it-works"
+              className="flex cursor-pointer items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--fg)]"
+            >
+              <HelpCircle size={15} />
+              <span className="hidden sm:inline">How it works</span>
+            </Link>
             <Link
               href="/inbox"
               className="flex cursor-pointer items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--fg)]"
@@ -166,54 +173,6 @@ export default function Landing() {
             </motion.p>
           )}
         </section>
-
-        <motion.section
-          initial={{ opacity: 0, y: 16 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, margin: "-60px" }}
-          transition={{ duration: 0.5 }}
-          className="mx-auto w-full max-w-3xl px-6 pb-20"
-        >
-          <p className="mb-5 text-center text-xs uppercase tracking-[0.2em] text-[var(--muted)]">
-            How it works
-          </p>
-          <div className="grid grid-cols-1 gap-3 sm:grid-cols-2 lg:grid-cols-4">
-            {[
-              {
-                step: "1",
-                title: "Say what you're avoiding",
-                body: "And the smallest first step. Nothing fancy, just enough to begin.",
-              },
-              {
-                step: "2",
-                title: "It starts loud",
-                body: "Motion, sound, frequent check-ins. Stimulation to get you moving.",
-              },
-              {
-                step: "3",
-                title: "It quietly fades",
-                body: "As you stay with it, the noise drops away on its own.",
-              },
-              {
-                step: "4",
-                title: "Drift? No guilt",
-                body: "Tap \"I drifted.\" It turns back up a little and keeps going.",
-              },
-            ].map((item) => (
-              <div
-                key={item.step}
-                className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4"
-              >
-                <span className="font-display text-xs text-[var(--accent)]">{item.step}</span>
-                <p className="mt-1.5 text-sm font-medium">{item.title}</p>
-                <p className="mt-1 text-xs leading-relaxed text-[var(--muted)]">{item.body}</p>
-              </div>
-            ))}
-          </div>
-          <p className="mt-5 text-center text-xs text-[var(--muted)]">
-            Built for ADHD brains that need stimulation to start and less of it to keep going.
-          </p>
-        </motion.section>
       </div>
     </main>
   );
