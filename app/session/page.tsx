@@ -8,6 +8,7 @@ import Companion, { Mood, Accessory } from "@/components/Companion";
 import AudioVisualizer from "@/components/AudioVisualizer";
 import { useSessionEngine } from "@/lib/useSessionEngine";
 import { getAudioEngine } from "@/lib/audio";
+import { speak, stopSpeaking } from "@/lib/voice";
 import {
   getAnimSetting,
   saveAnimSetting,
@@ -90,6 +91,7 @@ function SessionInner() {
     }
     return () => {
       wakeLockRef.current?.release?.().catch(() => {});
+      stopSpeaking();
     };
   }, []);
 
@@ -142,14 +144,27 @@ function SessionInner() {
     if (engine.zone !== prevZone.current) {
       if (zoneDepth(engine.zone) > zoneDepth(prevZone.current) && audioStarted) {
         audio.playChime("down");
+        if (sound.voiceGuidance && !sound.muted) {
+          const lines: Record<string, string> = {
+            busy: "Settling in.",
+            calm: "Getting quieter now.",
+            quiet: "Almost there. Nearly silent.",
+            silent: "Silent now. Just you and the work.",
+          };
+          const line = lines[engine.zone];
+          if (line) speak(line);
+        }
       }
       prevZone.current = engine.zone;
     }
-  }, [engine.zone, audio, audioStarted]);
+  }, [engine.zone, audio, audioStarted, sound.voiceGuidance, sound.muted]);
 
   useEffect(() => {
     if (engine.ended && !savedRef.current) {
       savedRef.current = true;
+      if (sound.voiceGuidance && !sound.muted) {
+        speak("Session complete. Well done.");
+      }
       const id = sessionId;
       const session = {
         id,
@@ -190,6 +205,9 @@ function SessionInner() {
       audio.start();
       setAudioStarted(true);
       markSoundTried(sound.ambientType);
+      if (sound.voiceGuidance && !sound.muted) {
+        speak(`Let's start. ${task}.`);
+      }
     }
   }
 
@@ -234,6 +252,9 @@ function SessionInner() {
     engine.logDrift();
     setMoodTrigger({ mood: "startled", id: Date.now() });
     setDriftMsg("Happens. Turning things back up a bit.");
+    if (sound.voiceGuidance && !sound.muted) {
+      speak("Happens. Turning things back up a bit.");
+    }
     setTimeout(() => setDriftMsg(null), 2600);
   }
 
@@ -594,6 +615,24 @@ function SessionInner() {
                       className="cursor-pointer rounded-full border border-[var(--border)] px-3 py-1 text-xs"
                     >
                       {sound.muted ? "Unmute" : "Mute"}
+                    </button>
+                  </div>
+                  <div className="mb-3 flex items-center justify-between text-sm">
+                    <span>Voice guidance</span>
+                    <button
+                      onClick={() => {
+                        const next = { ...sound, voiceGuidance: !sound.voiceGuidance };
+                        setSound(next);
+                        saveSoundSettings(next);
+                        if (next.voiceGuidance) speak("Voice guidance on.");
+                      }}
+                      className={`cursor-pointer rounded-full border px-3 py-1 text-xs ${
+                        sound.voiceGuidance
+                          ? "border-[var(--accent)] bg-[var(--accent)] text-[#1a1206]"
+                          : "border-[var(--border)]"
+                      }`}
+                    >
+                      {sound.voiceGuidance ? "On" : "Off"}
                     </button>
                   </div>
                   <label className="mb-1 block text-xs text-[var(--muted)]">

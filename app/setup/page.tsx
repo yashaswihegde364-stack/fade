@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import { Plus, X, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { suggestFirstStep } from "@/lib/suggest";
+import MicButton from "@/components/MicButton";
 
 export default function Setup() {
   const router = useRouter();
@@ -90,7 +91,10 @@ export default function Setup() {
       </Link>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <h1 className="font-display text-2xl font-semibold">What are you avoiding?</h1>
+        <div className="flex items-center justify-between gap-3">
+          <h1 className="font-display text-2xl font-semibold">What are you avoiding?</h1>
+          <MicButton onResult={(text) => setTask(text)} />
+        </div>
         <textarea
           value={task}
           onChange={(e) => setTask(e.target.value)}
@@ -99,13 +103,14 @@ export default function Setup() {
           className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-base outline-none focus:border-[var(--accent)]"
         />
 
-        <div className="mt-7 flex items-center justify-between gap-3">
+        <div className="mt-7 flex flex-wrap items-center gap-3">
           <h2 className="font-display text-xl font-semibold">What&apos;s the smallest first step?</h2>
+          <MicButton onResult={(text) => setFirstStep(text)} />
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleSuggest}
             disabled={!task.trim() || suggesting}
-            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/20 disabled:cursor-not-allowed disabled:opacity-40"
+            className="ml-auto flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/20 disabled:cursor-not-allowed disabled:opacity-40"
           >
             <motion.span
               animate={suggesting ? { rotate: 360 } : { rotate: 0 }}

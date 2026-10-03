@@ -133,6 +133,7 @@ export interface SoundSettings {
   chimeVolume: number;
   muted: boolean;
   ambientType: "brown" | "pink" | "rain" | "drone" | "birds" | "waterfall";
+  voiceGuidance: boolean;
 }
 
 export const DEFAULT_SOUND: SoundSettings = {
@@ -141,6 +142,7 @@ export const DEFAULT_SOUND: SoundSettings = {
   chimeVolume: 0.8,
   muted: false,
   ambientType: "brown",
+  voiceGuidance: false,
 };
 
 export function getSoundSettings(): SoundSettings {
