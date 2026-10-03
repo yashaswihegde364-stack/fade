@@ -42,6 +42,68 @@ export function stopSpeaking() {
   try {
     window.speechSynthesis.cancel();
   } catch {}
+  if (currentAudio) {
+    try {
+      currentAudio.pause();
+    } catch {}
+    currentAudio = null;
+  }
+}
+
+let currentAudio: HTMLAudioElement | null = null;
+let naturalVoiceFailed = false;
+
+export async function speakNatural(
+  text: string,
+  opts?: { voice?: string; onStart?: () => void; onEnd?: () => void },
+): Promise<void> {
+  if (typeof window === "undefined") return;
+  if (naturalVoiceFailed) {
+    speak(text);
+    opts?.onStart?.();
+    const check = setInterval(() => {
+      if (!window.speechSynthesis.speaking) {
+        clearInterval(check);
+        opts?.onEnd?.();
+      }
+    }, 150);
+    return;
+  }
+  try {
+    const res = await fetch("/api/voice", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ text, voice: opts?.voice }),
+    });
+    if (!res.ok) throw new Error("tts failed");
+    const blob = await res.blob();
+    const url = URL.createObjectURL(blob);
+    if (currentAudio) {
+      currentAudio.pause();
+    }
+    const audio = new Audio(url);
+    currentAudio = audio;
+    opts?.onStart?.();
+    audio.onended = () => {
+      URL.revokeObjectURL(url);
+      opts?.onEnd?.();
+    };
+    audio.onerror = () => {
+      URL.revokeObjectURL(url);
+      opts?.onEnd?.();
+    };
+    await audio.play();
+  } catch {
+    naturalVoiceFailed = true;
+    speak(text);
+    opts?.onStart?.();
+    const check = setInterval(() => {
+      if (!window.speechSynthesis.speaking) {
+        clearInterval(check);
+        opts?.onEnd?.();
+      }
+    }, 150);
+  }
 }
 
 export function isSpeechSupported(): boolean {

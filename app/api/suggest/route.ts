@@ -64,7 +64,7 @@ export async function POST(request: NextRequest) {
             const steps = parsed
               .filter((s) => typeof s === "string" && s.trim())
               .slice(0, 5)
-              .map((s: string) => s.trim());
+              .map((s: string) => s.replace(/\s*[—–]\s*/g, ". ").replace(/\.\s*\./g, ".").trim());
             if (steps.length > 0) {
               return NextResponse.json({ steps, source: "ai" });
             }
@@ -81,7 +81,11 @@ export async function POST(request: NextRequest) {
 
     const raw = await callGroq(FIRST_STEP_SYSTEM, cleanTask, 60);
     if (raw) {
-      const cleaned = raw.replace(/^["']|["']$/g, "").trim();
+      const cleaned = raw
+        .replace(/^["']|["']$/g, "")
+        .replace(/\s*[—–]\s*/g, ". ")
+        .replace(/\.\s*\./g, ".")
+        .trim();
       if (cleaned.length > 0 && cleaned.length < 200) {
         return NextResponse.json({ step: cleaned, source: "ai" });
       }
