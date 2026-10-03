@@ -6,6 +6,7 @@ import { motion } from "framer-motion";
 import Companion, { Mood, Species, Accessory } from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Magnetic from "@/components/Magnetic";
+import InstallButton from "@/components/InstallButton";
 import { Lightbulb, History as HistoryIcon } from "lucide-react";
 import { getAnimSetting, getCompanionUnlock } from "@/lib/storage";
 
@@ -70,6 +71,7 @@ export default function Landing() {
               <HistoryIcon size={15} />
               <span className="hidden sm:inline">History</span>
             </Link>
+            <InstallButton />
             <ThemeToggle />
           </div>
         </header>
