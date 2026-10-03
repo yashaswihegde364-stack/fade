@@ -1,36 +1,75 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Fade
 
-## Getting Started
+Starts loud. Gets quiet. You keep going.
 
-First, run the development server:
+Fade is a focus app for ADHD brains. ADHD brains under-respond to boring or delayed reward, so they
+seek stimulation. Most focus apps either bore you or keep piling on gamification forever. Fade does
+the opposite: a session starts **loud** — motion, sound, frequent check-ins and small rewards — and
+slowly gets **quieter** until you're working with almost nothing on screen. Stimulation is training
+wheels that come off on purpose. Over many sessions you need less of it to get going.
+
+Built for a builder-round submission, by someone who has ADHD.
+
+## Try it
+
+- **Start a session** — set what you're avoiding, the smallest first step, and a duration.
+- **90-second demo** — a full 25-minute session compressed into 90 seconds, so you can see the whole
+  arc (loud → busy → calm → quiet → silent) without waiting.
+
+## How it works
+
+One number, `S` (Stimulation Level, 100 → 0), drives everything on screen: particle density and
+speed, colour saturation, ambient sound volume, and how often a "still on it?" check-in appears. As
+`S` falls, the UI gets quieter — from a big animated timer down to a thin progress line and almost
+nothing else.
+
+- **I drifted** — always-visible button. Bumps `S` back up by 20 and the session resumes fading from
+  there, with a kind one-line response. No guilt, no streak reset.
+- **Check-ins** — a small, non-blocking card (not a screen-blocking popup) that offers a tiny reward
+  on tap and quietly fades away unanswered — no penalty messaging.
+- **Results** — an animated fade curve of the whole session, stats, and a shareable link.
+- **Progression** — if you reach Quiet or Silent, your next session starts a little lower than 100.
+
+## Stack
+
+- Next.js (App Router) + TypeScript + Tailwind CSS
+- Framer Motion for UI animation, `<canvas>` for the ambient particle field
+- Web Audio API for all sound — generated in code, no audio files
+- Next.js API routes + Supabase Postgres for sessions, history, share pages and a live "people
+  fading right now" counter
+- Deployed on Vercel from GitHub
+
+**The app works fully with no backend configured.** If Supabase is unreachable or the env vars are
+missing, everything silently falls back to `localStorage` — a reviewer should never see a broken
+screen.
+
+## Running locally
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Environment variables
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Copy `.env.example` to `.env.local` and fill in your own Supabase project if you want the shared
+backend (live counter, cross-device history, public share pages). Not required to run the app.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```
+NEXT_PUBLIC_SUPABASE_URL=
+NEXT_PUBLIC_SUPABASE_ANON_KEY=
+NEXT_PUBLIC_SITE_URL=
+```
 
-## Learn More
+Run `supabase/migration.sql` against your Supabase project to create the `sessions` and
+`live_sessions` tables with row-level security (anyone can insert and read, nobody can update or
+delete).
 
-To learn more about Next.js, take a look at the following resources:
+## Live link
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+_placeholder — added after deploy_
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## AI tools used
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Built with Claude Code (Claude), including the open-source `ui-ux-pro-max` Claude Skill for design
+guidance.
