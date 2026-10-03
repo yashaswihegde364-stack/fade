@@ -151,9 +151,9 @@ export default function Companion({
       tRef.current += dt;
       let s = sRef.current;
       if (loop) {
-        loopTRef.current += 0.0022;
+        loopTRef.current += 0.0038;
         const phase = (Math.sin(loopTRef.current) + 1) / 2;
-        s = 15 + (1 - phase) * 65;
+        s = 10 + (1 - phase) * 80;
       }
       const frac = s / 100;
       const reduced = anim === "reduced";
@@ -176,9 +176,9 @@ export default function Companion({
       }
 
       const energy = off ? 0.15 : reduced ? frac * 0.5 : frac;
-      const loopDamp = loop ? 0.45 : 1;
+      const loopDamp = loop ? 0.7 : 1;
       const bounceSpeed = (0.0016 + energy * 0.005) * loopDamp;
-      const bounceAmp = off ? 0 : (6 + energy * 16) * (reduced ? 0.5 : 1) * (loop ? 0.75 : 1);
+      const bounceAmp = off ? 0 : (6 + energy * 16) * (reduced ? 0.5 : 1) * (loop ? 0.9 : 1);
       let bob = Math.sin(tRef.current * bounceSpeed) * bounceAmp;
       let squashX = 1;
       let squashY = 1;
