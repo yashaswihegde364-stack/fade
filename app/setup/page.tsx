@@ -13,21 +13,54 @@ export default function Setup() {
   const [firstStep, setFirstStep] = useState("Open the document and write one sentence");
   const [suggesting, setSuggesting] = useState(false);
   const [suggestVersion, setSuggestVersion] = useState(0);
+  const [suggestSource, setSuggestSource] = useState<"ai" | "heuristic" | null>(null);
 
-  function handleSuggest() {
+  async function handleSuggest() {
     if (!task.trim()) return;
     setSuggesting(true);
-    setTimeout(() => {
+    try {
+      const res = await fetch("/api/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task }),
+      });
+      const data = await res.json();
+      setFirstStep(data.step || suggestFirstStep(task));
+      setSuggestSource(data.source === "ai" ? "ai" : "heuristic");
+    } catch {
       setFirstStep(suggestFirstStep(task));
-      setSuggestVersion((v) => v + 1);
-      setSuggesting(false);
-    }, 420);
+      setSuggestSource("heuristic");
+    }
+    setSuggestVersion((v) => v + 1);
+    setSuggesting(false);
   }
+
   const [duration, setDuration] = useState(25);
   const [customDuration, setCustomDuration] = useState("");
   const [showBreakdown, setShowBreakdown] = useState(false);
   const [steps, setSteps] = useState<string[]>([]);
   const [stepInput, setStepInput] = useState("");
+  const [breakingDown, setBreakingDown] = useState(false);
+
+  async function handleAiBreakdown() {
+    if (!task.trim()) return;
+    setShowBreakdown(true);
+    setBreakingDown(true);
+    try {
+      const res = await fetch("/api/suggest", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ task, mode: "breakdown" }),
+      });
+      const data = await res.json();
+      if (Array.isArray(data.steps) && data.steps.length > 0) {
+        setSteps(data.steps.slice(0, 5));
+      }
+    } catch {
+      // keep existing steps on failure
+    }
+    setBreakingDown(false);
+  }
 
   function addStep() {
     if (stepInput.trim() && steps.length < 5) {
@@ -62,6 +95,7 @@ export default function Setup() {
           value={task}
           onChange={(e) => setTask(e.target.value)}
           rows={2}
+          autoComplete="off"
           className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-base outline-none focus:border-[var(--accent)]"
         />
 
@@ -90,15 +124,40 @@ export default function Setup() {
           value={firstStep}
           onChange={(e) => setFirstStep(e.target.value)}
           rows={2}
+          autoComplete="off"
           className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] px-4 py-3 text-base outline-none focus:border-[var(--accent)]"
         />
+        {suggestSource && (
+          <motion.p
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-1 text-[11px] text-[var(--muted)]"
+          >
+            {suggestSource === "ai" ? "suggested by AI" : "suggested"}
+          </motion.p>
+        )}
 
-        <button
-          onClick={() => setShowBreakdown((s) => !s)}
-          className="mt-3 cursor-pointer text-sm text-[var(--accent)] underline-offset-2 hover:underline"
-        >
-          {showBreakdown ? "Hide" : "Break it down"}
-        </button>
+        <div className="mt-3 flex items-center gap-4">
+          <button
+            onClick={() => setShowBreakdown((s) => !s)}
+            className="cursor-pointer text-sm text-[var(--accent)] underline-offset-2 hover:underline"
+          >
+            {showBreakdown ? "Hide" : "Break it down"}
+          </button>
+          <button
+            onClick={handleAiBreakdown}
+            disabled={!task.trim() || breakingDown}
+            className="flex cursor-pointer items-center gap-1 text-sm text-[var(--muted)] underline-offset-2 hover:text-[var(--fg)] hover:underline disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <motion.span
+              animate={breakingDown ? { rotate: 360 } : { rotate: 0 }}
+              transition={{ duration: 0.5, repeat: breakingDown ? Infinity : 0, ease: "linear" }}
+            >
+              <Sparkles size={12} />
+            </motion.span>
+            Let AI break it down
+          </button>
+        </div>
 
         {showBreakdown && (
           <div className="mt-3 space-y-2">
