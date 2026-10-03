@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX, Pause, Play, X, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
-import Companion, { Mood } from "@/components/Companion";
+import Companion, { Mood, Accessory } from "@/components/Companion";
 import AudioVisualizer from "@/components/AudioVisualizer";
 import { useSessionEngine } from "@/lib/useSessionEngine";
 import { getAudioEngine } from "@/lib/audio";
@@ -22,6 +22,7 @@ import {
   saveStartLevel,
   addCapture,
   getCaptures,
+  getCompanionUnlock,
 } from "@/lib/storage";
 import { ZONE_LABEL, zoneDepth } from "@/lib/types";
 
@@ -41,6 +42,11 @@ function SessionInner() {
   }, [params]);
 
   const [startLevel] = useState(() => getStartLevel());
+  const [accessory, setAccessory] = useState<Accessory>("none");
+
+  useEffect(() => {
+    setAccessory(getCompanionUnlock());
+  }, []);
   const [steps, setSteps] = useState(initialSteps.map((s) => ({ text: s, done: false })));
   const [stepsOpen, setStepsOpen] = useState(true);
   const [settingsOpen, setSettingsOpen] = useState(false);
@@ -48,6 +54,7 @@ function SessionInner() {
   const [sound, setSound] = useState<SoundSettings>(getSoundSettings());
   const [audioStarted, setAudioStarted] = useState(false);
   const [driftMsg, setDriftMsg] = useState<string | null>(null);
+  const [rewardToast, setRewardToast] = useState<string | null>(null);
   const [sessionId] = useState(() => newSessionId());
   const [captureOpen, setCaptureOpen] = useState(false);
   const [captureText, setCaptureText] = useState("");
@@ -187,11 +194,35 @@ function SessionInner() {
   function handleAnswer() {
     startAudioIfNeeded();
     audio.playBurst();
-    if (navigator.vibrate) {
+
+    const roll = Math.random();
+    if (roll < 0.1) {
+      const messages = ["On a roll.", "That's the rhythm.", "Look at you go."];
+      setRewardToast(messages[Math.floor(Math.random() * messages.length)]);
+      setTimeout(() => setRewardToast(null), 1800);
+      setTimeout(() => {
+        audio.playBurst();
+        setMoodTrigger({ mood: "happy", id: Date.now() + 1 });
+      }, 260);
+      if (navigator.vibrate) {
+        try {
+          navigator.vibrate([40, 50, 40]);
+        } catch {}
+      }
+    } else if (roll < 0.3) {
+      setRewardToast("Nice.");
+      setTimeout(() => setRewardToast(null), 1400);
+      if (navigator.vibrate) {
+        try {
+          navigator.vibrate(50);
+        } catch {}
+      }
+    } else if (navigator.vibrate) {
       try {
         navigator.vibrate(40);
       } catch {}
     }
+
     setMoodTrigger({ mood: "happy", id: Date.now() });
     engine.answerCheckin();
   }
@@ -235,6 +266,7 @@ function SessionInner() {
           S={S}
           anim={anim}
           moodTrigger={moodTrigger}
+          accessory={accessory}
           interactive
           onTap={() => {
             startAudioIfNeeded();
@@ -410,6 +442,16 @@ function SessionInner() {
             className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm backdrop-blur"
           >
             {driftMsg}
+          </motion.div>
+        )}
+        {rewardToast && (
+          <motion.div
+            initial={{ opacity: 0, y: 10, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full bg-[var(--accent)] px-5 py-2.5 text-sm font-medium text-[#1a1206]"
+          >
+            {rewardToast}
           </motion.div>
         )}
       </AnimatePresence>

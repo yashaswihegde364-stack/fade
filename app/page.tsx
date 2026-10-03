@@ -3,10 +3,11 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Companion, { Mood, Species } from "@/components/Companion";
+import Companion, { Mood, Species, Accessory } from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Magnetic from "@/components/Magnetic";
-import { getAnimSetting } from "@/lib/storage";
+import { Lightbulb, History as HistoryIcon } from "lucide-react";
+import { getAnimSetting, getCompanionUnlock } from "@/lib/storage";
 
 export default function Landing() {
   const [live, setLive] = useState<{ total: number; byZone: Record<string, number> } | null>(
@@ -16,6 +17,7 @@ export default function Landing() {
   const [anim, setAnim] = useState<ReturnType<typeof getAnimSetting>>("full");
   const [species, setSpecies] = useState<Species>("blob");
   const [mood, setMood] = useState<{ mood: Mood; id: number } | null>(null);
+  const [accessory, setAccessory] = useState<Accessory>("none");
 
   useEffect(() => {
     let buffer = "";
@@ -43,6 +45,7 @@ export default function Landing() {
       .then((d) => setLive(d))
       .catch(() => {});
     setAnim(getAnimSetting());
+    setAccessory(getCompanionUnlock());
   }, []);
 
   return (
@@ -54,10 +57,18 @@ export default function Landing() {
           <span className="font-display text-lg font-semibold tracking-tight">fade</span>
           <div className="flex items-center gap-3">
             <Link
-              href="/history"
-              className="hidden cursor-pointer text-sm text-[var(--muted)] hover:text-[var(--fg)] sm:block"
+              href="/inbox"
+              className="flex cursor-pointer items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--fg)]"
             >
-              History
+              <Lightbulb size={15} />
+              <span className="hidden sm:inline">Brain dump</span>
+            </Link>
+            <Link
+              href="/history"
+              className="flex cursor-pointer items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--fg)]"
+            >
+              <HistoryIcon size={15} />
+              <span className="hidden sm:inline">History</span>
             </Link>
             <ThemeToggle />
           </div>
@@ -70,7 +81,14 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
             className="relative h-40 w-full max-w-xs sm:h-48"
           >
-            <Companion S={100} anim={anim} loop species={species} moodTrigger={mood} />
+            <Companion
+              S={100}
+              anim={anim}
+              loop
+              species={species}
+              accessory={accessory}
+              moodTrigger={mood}
+            />
           </motion.div>
 
           <motion.h1

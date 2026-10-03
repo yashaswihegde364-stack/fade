@@ -24,6 +24,7 @@ function bodyColor(s: number) {
 export type Mood = "idle" | "happy" | "startled";
 
 export type Species = "blob" | "dino";
+export type Accessory = "none" | "sparkle" | "glow";
 
 export default function Companion({
   S,
@@ -32,6 +33,7 @@ export default function Companion({
   interactive = false,
   loop = false,
   species = "blob",
+  accessory = "none",
   onTap,
 }: {
   S: number;
@@ -40,11 +42,13 @@ export default function Companion({
   interactive?: boolean;
   loop?: boolean;
   species?: Species;
+  accessory?: Accessory;
   onTap?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sRef = useRef(S);
   const speciesRef = useRef(species);
+  const accessoryRef = useRef(accessory);
   const loopTRef = useRef(0);
   const moodRef = useRef<{ mood: Mood; startedAt: number } | null>(null);
   const sparksRef = useRef<Spark[]>([]);
@@ -59,6 +63,10 @@ export default function Companion({
   useEffect(() => {
     speciesRef.current = species;
   }, [species]);
+
+  useEffect(() => {
+    accessoryRef.current = accessory;
+  }, [accessory]);
 
   useEffect(() => {
     if (moodTrigger) {
@@ -187,7 +195,8 @@ export default function Companion({
       }
 
       const color = off ? "#8a9099" : bodyColor(s);
-      const glowAlpha = off ? 0 : 0.25 + energy * 0.35;
+      const accessoryBoost = accessoryRef.current !== "none" ? 0.15 : 0;
+      const glowAlpha = off ? 0 : 0.25 + energy * 0.35 + accessoryBoost;
 
       if (!off) {
         const grad = ctx.createRadialGradient(cx, cy, baseR * 0.2, cx, cy, baseR * 2.6);
@@ -297,6 +306,35 @@ export default function Companion({
       ctx.stroke();
 
       ctx.restore();
+
+      if (!off && accessoryRef.current === "sparkle") {
+        const starPositions = [
+          { a: 0.9, d: 1.25 },
+          { a: 2.5, d: 1.35 },
+          { a: 4.3, d: 1.2 },
+        ];
+        starPositions.forEach((sp, i) => {
+          const twinkle = (Math.sin(tRef.current * 0.0025 + i * 2.1) + 1) / 2;
+          const sx = cx + Math.cos(sp.a) * baseR * sp.d;
+          const sy = cy + Math.sin(sp.a) * baseR * sp.d - baseR * 0.6;
+          const r = baseR * 0.07 * (0.6 + twinkle * 0.6);
+          ctx.save();
+          ctx.globalAlpha = 0.35 + twinkle * 0.6;
+          ctx.fillStyle = "#ffe08a";
+          ctx.beginPath();
+          ctx.moveTo(sx, sy - r);
+          ctx.lineTo(sx + r * 0.3, sy - r * 0.3);
+          ctx.lineTo(sx + r, sy);
+          ctx.lineTo(sx + r * 0.3, sy + r * 0.3);
+          ctx.lineTo(sx, sy + r);
+          ctx.lineTo(sx - r * 0.3, sy + r * 0.3);
+          ctx.lineTo(sx - r, sy);
+          ctx.lineTo(sx - r * 0.3, sy - r * 0.3);
+          ctx.closePath();
+          ctx.fill();
+          ctx.restore();
+        });
+      }
 
       if (sparksRef.current.length) {
         sparksRef.current = sparksRef.current.filter((p) => p.life > 0.03);

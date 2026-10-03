@@ -89,6 +89,44 @@ export function addCapture(sessionId: string, text: string) {
   localStorage.setItem(CAPTURES_KEY_PREFIX + sessionId, JSON.stringify(all));
 }
 
+export interface InboxItem {
+  id: string;
+  text: string;
+  createdAt: string;
+  done: boolean;
+}
+
+const INBOX_KEY = "fade_inbox";
+
+export function getInbox(): InboxItem[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(INBOX_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addInboxItem(text: string) {
+  if (typeof window === "undefined") return;
+  const all = getInbox();
+  all.unshift({ id: uuid(), text, createdAt: new Date().toISOString(), done: false });
+  localStorage.setItem(INBOX_KEY, JSON.stringify(all.slice(0, 100)));
+}
+
+export function toggleInboxItem(id: string) {
+  if (typeof window === "undefined") return;
+  const all = getInbox().map((i) => (i.id === id ? { ...i, done: !i.done } : i));
+  localStorage.setItem(INBOX_KEY, JSON.stringify(all));
+}
+
+export function removeInboxItem(id: string) {
+  if (typeof window === "undefined") return;
+  const all = getInbox().filter((i) => i.id !== id);
+  localStorage.setItem(INBOX_KEY, JSON.stringify(all));
+}
+
 export interface SoundSettings {
   masterVolume: number;
   ambientVolume: number;
@@ -167,4 +205,67 @@ export function getStreak(): number {
     else break;
   }
   return streak;
+}
+
+export function getBestStreak(): number {
+  const sessions = getSessions().filter((s) => !s.isDemo);
+  const seenDays = new Set<string>();
+  for (const s of sessions) seenDays.add(s.createdAt.slice(0, 10));
+  const days = Array.from(seenDays).sort();
+  let best = 0;
+  let current = 0;
+  let prev: Date | null = null;
+  for (const d of days) {
+    const date = new Date(d);
+    if (prev) {
+      const diffDays = Math.round((date.getTime() - prev.getTime()) / 86400000);
+      current = diffDays === 1 ? current + 1 : 1;
+    } else {
+      current = 1;
+    }
+    best = Math.max(best, current);
+    prev = date;
+  }
+  return best;
+}
+
+export interface WeeklyStats {
+  sessionsThisWeek: number;
+  minutesThisWeek: number;
+  totalSessions: number;
+  totalMinutes: number;
+}
+
+export function getWeeklyStats(): WeeklyStats {
+  const sessions = getSessions().filter((s) => !s.isDemo);
+  const now = Date.now();
+  const weekAgo = now - 7 * 86400000;
+  let sessionsThisWeek = 0;
+  let minutesThisWeek = 0;
+  let totalMinutes = 0;
+  for (const s of sessions) {
+    const mins = s.actualSeconds / 60;
+    totalMinutes += mins;
+    if (new Date(s.createdAt).getTime() >= weekAgo) {
+      sessionsThisWeek++;
+      minutesThisWeek += mins;
+    }
+  }
+  return {
+    sessionsThisWeek,
+    minutesThisWeek: Math.round(minutesThisWeek),
+    totalSessions: sessions.length,
+    totalMinutes: Math.round(totalMinutes),
+  };
+}
+
+export type CompanionUnlock = "none" | "sparkle" | "glow";
+
+export function getCompanionUnlock(): CompanionUnlock {
+  const streak = getStreak();
+  const best = getBestStreak();
+  const unlockLevel = Math.max(streak, best);
+  if (unlockLevel >= 7) return "glow";
+  if (unlockLevel >= 3) return "sparkle";
+  return "none";
 }

@@ -4,6 +4,8 @@ import "./globals.css";
 import SplashIntro from "@/components/SplashIntro";
 import CursorGlow from "@/components/CursorGlow";
 import PageTransition from "@/components/PageTransition";
+import WelcomeNote from "@/components/WelcomeNote";
+import GlobalCapture from "@/components/GlobalCapture";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -25,6 +27,14 @@ export const metadata: Metadata = {
     description: "Starts loud. Gets quiet. You keep going.",
     type: "website",
   },
+  appleWebApp: {
+    capable: true,
+    statusBarStyle: "black-translucent",
+    title: "Fade",
+  },
+  icons: {
+    apple: "/icons/apple-touch-icon.png",
+  },
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
@@ -36,6 +46,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       <body className="min-h-full bg-[var(--bg)] text-[var(--fg)] font-body">
         <CursorGlow />
         <SplashIntro />
+        <WelcomeNote />
+        <GlobalCapture />
         <PageTransition>{children}</PageTransition>
       </body>
     </html>

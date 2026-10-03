@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
-import { getSessions, getStreak } from "@/lib/storage";
+import { getSessions, getStreak, getBestStreak, getWeeklyStats, WeeklyStats } from "@/lib/storage";
 import { SessionResult } from "@/lib/types";
 
 function TrendChart({ sessions }: { sessions: SessionResult[] }) {
@@ -62,10 +62,14 @@ function MiniCurve({ session }: { session: SessionResult }) {
 export default function History() {
   const [sessions, setSessions] = useState<SessionResult[]>([]);
   const [streak, setStreak] = useState(0);
+  const [bestStreak, setBestStreak] = useState(0);
+  const [weekly, setWeekly] = useState<WeeklyStats | null>(null);
 
   useEffect(() => {
     setSessions(getSessions().filter((s) => !s.isDemo));
     setStreak(getStreak());
+    setBestStreak(getBestStreak());
+    setWeekly(getWeeklyStats());
   }, []);
 
   return (
@@ -83,6 +87,28 @@ export default function History() {
           {streak} day streak
         </div>
       </div>
+
+      {weekly && sessions.length > 0 && (
+        <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-4">
+          {[
+            { label: "This week", value: weekly.sessionsThisWeek, suffix: " sessions" },
+            { label: "Minutes this week", value: weekly.minutesThisWeek, suffix: "m" },
+            { label: "Best streak", value: bestStreak, suffix: "d" },
+            { label: "All-time minutes", value: weekly.totalMinutes, suffix: "m" },
+          ].map((s) => (
+            <div
+              key={s.label}
+              className="rounded-xl border border-[var(--border)] bg-[var(--card)] p-4"
+            >
+              <p className="font-display text-xl font-semibold">
+                {s.value}
+                <span className="text-sm text-[var(--muted)]">{s.suffix}</span>
+              </p>
+              <p className="mt-0.5 text-xs text-[var(--muted)]">{s.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
 
       {sessions.length === 0 ? (
         <p className="mt-10 text-[var(--muted)]">No sessions yet. Start one to see it here.</p>
