@@ -3,13 +3,26 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { motion } from "framer-motion";
-import { Plus, X, ArrowLeft } from "lucide-react";
+import { Plus, X, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
+import { suggestFirstStep } from "@/lib/suggest";
 
 export default function Setup() {
   const router = useRouter();
   const [task, setTask] = useState("Write the first draft of my essay");
   const [firstStep, setFirstStep] = useState("Open the document and write one sentence");
+  const [suggesting, setSuggesting] = useState(false);
+  const [suggestVersion, setSuggestVersion] = useState(0);
+
+  function handleSuggest() {
+    if (!task.trim()) return;
+    setSuggesting(true);
+    setTimeout(() => {
+      setFirstStep(suggestFirstStep(task));
+      setSuggestVersion((v) => v + 1);
+      setSuggesting(false);
+    }, 420);
+  }
   const [duration, setDuration] = useState(25);
   const [customDuration, setCustomDuration] = useState("");
   const [showBreakdown, setShowBreakdown] = useState(false);
@@ -52,12 +65,32 @@ export default function Setup() {
           className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-base outline-none focus:border-[var(--accent)]"
         />
 
-        <h2 className="mt-7 font-display text-xl font-semibold">What&apos;s the smallest first step?</h2>
-        <textarea
+        <div className="mt-7 flex items-center justify-between gap-3">
+          <h2 className="font-display text-xl font-semibold">What&apos;s the smallest first step?</h2>
+          <motion.button
+            whileTap={{ scale: 0.95 }}
+            onClick={handleSuggest}
+            disabled={!task.trim() || suggesting}
+            className="flex shrink-0 cursor-pointer items-center gap-1.5 rounded-full border border-[var(--accent)]/40 bg-[var(--accent)]/10 px-3 py-1.5 text-xs font-medium text-[var(--accent)] transition hover:bg-[var(--accent)]/20 disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            <motion.span
+              animate={suggesting ? { rotate: 360 } : { rotate: 0 }}
+              transition={{ duration: 0.5, repeat: suggesting ? Infinity : 0, ease: "linear" }}
+            >
+              <Sparkles size={13} />
+            </motion.span>
+            Suggest a tiny step
+          </motion.button>
+        </div>
+        <motion.textarea
+          key={suggestVersion}
+          initial={{ backgroundColor: "color-mix(in srgb, var(--accent) 18%, var(--card))" }}
+          animate={{ backgroundColor: "var(--card)" }}
+          transition={{ duration: 0.9 }}
           value={firstStep}
           onChange={(e) => setFirstStep(e.target.value)}
           rows={2}
-          className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-4 py-3 text-base outline-none focus:border-[var(--accent)]"
+          className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] px-4 py-3 text-base outline-none focus:border-[var(--accent)]"
         />
 
         <button

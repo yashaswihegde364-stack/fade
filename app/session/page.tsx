@@ -168,7 +168,11 @@ function SessionInner() {
           saveStartLevel(Math.max(50, startLevel - 8));
         }
       }
-      router.push(`/results?id=${id}`);
+      if (isDemo) {
+        router.push(`/results?id=${id}`);
+      } else {
+        router.push(`/break?next=${encodeURIComponent(`/results?id=${id}`)}`);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [engine.ended]);
@@ -514,6 +518,11 @@ function SessionInner() {
               </div>
 
               <div className="space-y-5">
+                {audioStarted && (
+                  <div className="overflow-hidden rounded-xl border border-[var(--border)] bg-[var(--card)] px-2">
+                    <AudioVisualizer analyser={audio.getAnalyser()} />
+                  </div>
+                )}
                 <div>
                   <div className="mb-1.5 flex items-center justify-between text-sm">
                     <span>Mute</span>

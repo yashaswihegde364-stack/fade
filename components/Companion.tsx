@@ -23,12 +23,15 @@ function bodyColor(s: number) {
 
 export type Mood = "idle" | "happy" | "startled";
 
+export type Species = "blob" | "dino";
+
 export default function Companion({
   S,
   anim,
   moodTrigger,
   interactive = false,
   loop = false,
+  species = "blob",
   onTap,
 }: {
   S: number;
@@ -36,10 +39,12 @@ export default function Companion({
   moodTrigger?: { mood: Mood; id: number } | null;
   interactive?: boolean;
   loop?: boolean;
+  species?: Species;
   onTap?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const sRef = useRef(S);
+  const speciesRef = useRef(species);
   const loopTRef = useRef(0);
   const moodRef = useRef<{ mood: Mood; startedAt: number } | null>(null);
   const sparksRef = useRef<Spark[]>([]);
@@ -50,6 +55,10 @@ export default function Companion({
   useEffect(() => {
     sRef.current = S;
   }, [S]);
+
+  useEffect(() => {
+    speciesRef.current = species;
+  }, [species]);
 
   useEffect(() => {
     if (moodTrigger) {
@@ -195,7 +204,7 @@ export default function Companion({
       ctx.rotate(tilt);
       ctx.scale(squashX, squashY);
 
-      if (!off && energy > 0.15) {
+      if (!off && energy > 0.15 && speciesRef.current === "blob") {
         const earWiggle = Math.sin(tRef.current * 0.004) * energy * 0.3;
         ctx.save();
         ctx.fillStyle = color;
@@ -214,6 +223,37 @@ export default function Companion({
         ctx.ellipse(0, 0, baseR * 0.18, baseR * 0.38, 0, 0, Math.PI * 2);
         ctx.fill();
         ctx.restore();
+        ctx.restore();
+      }
+
+      if (!off && speciesRef.current === "dino") {
+        const wag = Math.sin(tRef.current * 0.005) * 0.3;
+        ctx.save();
+        ctx.fillStyle = color;
+        ctx.globalAlpha = 0.9;
+
+        ctx.save();
+        ctx.translate(baseR * 0.75, baseR * 0.55);
+        ctx.rotate(0.5 + wag);
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        ctx.quadraticCurveTo(baseR * 0.55, baseR * 0.1, baseR * 0.85, -baseR * 0.15);
+        ctx.quadraticCurveTo(baseR * 0.5, baseR * 0.25, 0, baseR * 0.22);
+        ctx.closePath();
+        ctx.fill();
+        ctx.restore();
+
+        const spikeXs = [-0.25, 0.05, 0.35];
+        spikeXs.forEach((fx, i) => {
+          ctx.beginPath();
+          const sx = baseR * fx;
+          const sy = -baseR * 0.88 + i * 1;
+          ctx.moveTo(sx - baseR * 0.09, sy + baseR * 0.14);
+          ctx.lineTo(sx, sy - baseR * 0.12);
+          ctx.lineTo(sx + baseR * 0.09, sy + baseR * 0.14);
+          ctx.closePath();
+          ctx.fill();
+        });
         ctx.restore();
       }
 

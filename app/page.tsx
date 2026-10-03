@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import Companion from "@/components/Companion";
+import Companion, { Mood, Species } from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Magnetic from "@/components/Magnetic";
 import { getAnimSetting } from "@/lib/storage";
@@ -14,6 +14,28 @@ export default function Landing() {
   );
 
   const [anim, setAnim] = useState<ReturnType<typeof getAnimSetting>>("full");
+  const [species, setSpecies] = useState<Species>("blob");
+  const [mood, setMood] = useState<{ mood: Mood; id: number } | null>(null);
+
+  useEffect(() => {
+    let buffer = "";
+    let revertTimer: ReturnType<typeof setTimeout> | null = null;
+    function onKey(e: KeyboardEvent) {
+      if (e.key.length !== 1) return;
+      buffer = (buffer + e.key.toLowerCase()).slice(-4);
+      if (buffer === "rawr") {
+        setSpecies("dino");
+        setMood({ mood: "happy", id: Date.now() });
+        if (revertTimer) clearTimeout(revertTimer);
+        revertTimer = setTimeout(() => setSpecies("blob"), 4500);
+      }
+    }
+    window.addEventListener("keydown", onKey);
+    return () => {
+      window.removeEventListener("keydown", onKey);
+      if (revertTimer) clearTimeout(revertTimer);
+    };
+  }, []);
 
   useEffect(() => {
     fetch("/api/live")
@@ -48,7 +70,7 @@ export default function Landing() {
             transition={{ duration: 0.6 }}
             className="relative h-40 w-full max-w-xs sm:h-48"
           >
-            <Companion S={100} anim={anim} loop />
+            <Companion S={100} anim={anim} loop species={species} moodTrigger={mood} />
           </motion.div>
 
           <motion.h1

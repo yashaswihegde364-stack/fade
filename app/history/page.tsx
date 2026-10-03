@@ -2,9 +2,43 @@
 
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { motion } from "framer-motion";
 import { ArrowLeft } from "lucide-react";
 import { getSessions, getStreak } from "@/lib/storage";
 import { SessionResult } from "@/lib/types";
+
+function TrendChart({ sessions }: { sessions: SessionResult[] }) {
+  const chronological = [...sessions].reverse();
+  const w = 600;
+  const h = 100;
+  const n = chronological.length;
+  const barW = Math.min(28, w / Math.max(n, 1) - 6);
+
+  return (
+    <div className="rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+      <p className="text-xs text-[var(--muted)]">Starting level over time</p>
+      <svg viewBox={`0 0 ${w} ${h + 16}`} className="mt-3 w-full overflow-visible">
+        {chronological.map((s, i) => {
+          const x = n <= 1 ? w / 2 - barW / 2 : (i / (n - 1)) * (w - barW);
+          const barH = (s.startLevel / 100) * h;
+          return (
+            <motion.rect
+              key={s.id}
+              x={x}
+              y={h - barH}
+              width={barW}
+              rx={4}
+              fill="var(--accent)"
+              initial={{ height: 0, y: h }}
+              animate={{ height: barH, y: h - barH }}
+              transition={{ delay: i * 0.03, duration: 0.5, ease: "easeOut" }}
+            />
+          );
+        })}
+      </svg>
+    </div>
+  );
+}
 
 function MiniCurve({ session }: { session: SessionResult }) {
   const w = 120;
@@ -53,7 +87,13 @@ export default function History() {
       {sessions.length === 0 ? (
         <p className="mt-10 text-[var(--muted)]">No sessions yet. Start one to see it here.</p>
       ) : (
-        <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
+        <>
+          {sessions.length > 1 && (
+            <div className="mt-8">
+              <TrendChart sessions={sessions} />
+            </div>
+          )}
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3">
           {sessions.map((s) => (
             <Link
               key={s.id}
@@ -69,7 +109,8 @@ export default function History() {
               </p>
             </Link>
           ))}
-        </div>
+          </div>
+        </>
       )}
     </main>
   );
