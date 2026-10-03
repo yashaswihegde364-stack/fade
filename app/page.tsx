@@ -5,6 +5,7 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import Companion from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
+import Magnetic from "@/components/Magnetic";
 import { getAnimSetting } from "@/lib/storage";
 
 export default function Landing() {
@@ -72,18 +73,22 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="mt-10 flex flex-col gap-3 sm:flex-row"
           >
-            <Link
-              href="/setup"
-              className="cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 font-medium text-[#1a1206] transition hover:brightness-110 active:scale-95"
-            >
-              Start a session
-            </Link>
-            <Link
-              href="/session?demo=1"
-              className="cursor-pointer rounded-full border border-[var(--border)] bg-[var(--card)] px-8 py-3.5 font-medium transition hover:border-[var(--accent)] active:scale-95"
-            >
-              Try the 90-second demo
-            </Link>
+            <Magnetic>
+              <Link
+                href="/setup"
+                className="inline-block cursor-pointer rounded-full bg-[var(--accent)] px-8 py-3.5 font-medium text-[#1a1206] transition hover:brightness-110 active:scale-95"
+              >
+                Start a session
+              </Link>
+            </Magnetic>
+            <Magnetic>
+              <Link
+                href="/session?demo=1"
+                className="inline-block cursor-pointer rounded-full border border-[var(--border)] bg-[var(--card)] px-8 py-3.5 font-medium transition hover:border-[var(--accent)] active:scale-95"
+              >
+                Try the 90-second demo
+              </Link>
+            </Magnetic>
           </motion.div>
 
           {live && live.total > 0 && (

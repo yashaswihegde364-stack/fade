@@ -1,6 +1,9 @@
 import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
+import SplashIntro from "@/components/SplashIntro";
+import CursorGlow from "@/components/CursorGlow";
+import PageTransition from "@/components/PageTransition";
 
 const spaceGrotesk = Space_Grotesk({
   variable: "--font-display",
@@ -31,7 +34,9 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--fg)] font-body">
-        {children}
+        <CursorGlow />
+        <SplashIntro />
+        <PageTransition>{children}</PageTransition>
       </body>
     </html>
   );
