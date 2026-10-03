@@ -4,8 +4,8 @@ import { Suspense, useEffect, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { Share2, Check } from "lucide-react";
-import { getSessionById } from "@/lib/storage";
+import { Share2, Check, Lightbulb } from "lucide-react";
+import { getSessionById, getCaptures } from "@/lib/storage";
 import { SessionResult, ZONE_LABEL } from "@/lib/types";
 
 function Curve({ session }: { session: SessionResult }) {
@@ -74,9 +74,13 @@ function ResultsInner() {
   const id = params.get("id");
   const [session, setSession] = useState<SessionResult | null>(null);
   const [copied, setCopied] = useState(false);
+  const [captures, setCaptures] = useState<string[]>([]);
 
   useEffect(() => {
-    if (id) setSession(getSessionById(id));
+    if (id) {
+      setSession(getSessionById(id));
+      setCaptures(getCaptures(id));
+    }
   }, [id]);
 
   async function share() {
@@ -138,6 +142,21 @@ function ResultsInner() {
           <p className="mt-6 text-sm text-[var(--muted)]">
             Next session starts at {nextStart} instead of {session.startLevel}.
           </p>
+        )}
+
+        {captures.length > 0 && (
+          <div className="mt-6 rounded-2xl border border-[var(--border)] bg-[var(--card)] p-5">
+            <p className="flex items-center gap-1.5 font-display text-sm font-semibold">
+              <Lightbulb size={14} /> Thoughts you let go of
+            </p>
+            <ul className="mt-3 space-y-2">
+              {captures.map((c, i) => (
+                <li key={i} className="text-sm text-[var(--muted)]">
+                  {c}
+                </li>
+              ))}
+            </ul>
+          </div>
         )}
 
         <div className="mt-8 flex flex-col gap-3 sm:flex-row">

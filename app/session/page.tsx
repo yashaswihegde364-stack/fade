@@ -3,8 +3,9 @@
 import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
-import { Volume2, VolumeX, Pause, Play, X, ChevronDown, ChevronUp } from "lucide-react";
+import { Volume2, VolumeX, Pause, Play, X, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
 import ParticleField from "@/components/ParticleField";
+import AudioVisualizer from "@/components/AudioVisualizer";
 import { useSessionEngine } from "@/lib/useSessionEngine";
 import { getAudioEngine } from "@/lib/audio";
 import {
@@ -19,6 +20,8 @@ import {
   saveSession,
   getStartLevel,
   saveStartLevel,
+  addCapture,
+  getCaptures,
 } from "@/lib/storage";
 import { ZONE_LABEL, zoneDepth } from "@/lib/types";
 
@@ -45,6 +48,11 @@ function SessionInner() {
   const [sound, setSound] = useState<SoundSettings>(getSoundSettings());
   const [audioStarted, setAudioStarted] = useState(false);
   const [driftMsg, setDriftMsg] = useState<string | null>(null);
+  const [sessionId] = useState(() => newSessionId());
+  const [captureOpen, setCaptureOpen] = useState(false);
+  const [captureText, setCaptureText] = useState("");
+  const [captureCount, setCaptureCount] = useState(0);
+  const [liveCount, setLiveCount] = useState(0);
   const savedRef = useRef(false);
   const wakeLockRef = useRef<any>(null);
 
@@ -77,13 +85,19 @@ function SessionInner() {
   }, []);
 
   useEffect(() => {
-    const id = setInterval(() => {
+    function beat() {
       fetch("/api/live", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ device_id: getDeviceId(), zone: engine.zone }),
       }).catch(() => {});
-    }, 30000);
+      fetch("/api/live")
+        .then((r) => r.json())
+        .then((d) => setLiveCount(d.total || 0))
+        .catch(() => {});
+    }
+    beat();
+    const id = setInterval(beat, 30000);
     return () => clearInterval(id);
   }, [engine.zone]);
 
@@ -127,7 +141,7 @@ function SessionInner() {
   useEffect(() => {
     if (engine.ended && !savedRef.current) {
       savedRef.current = true;
-      const id = newSessionId();
+      const id = sessionId;
       const session = {
         id,
         deviceId: getDeviceId(),
@@ -187,6 +201,15 @@ function SessionInner() {
     setSteps((s) => s.map((st, idx) => (idx === i ? { ...st, done: !st.done } : st)));
   }
 
+  function submitCapture() {
+    if (captureText.trim()) {
+      addCapture(sessionId, captureText.trim());
+      setCaptureCount((c) => c + 1);
+      setCaptureText("");
+    }
+    setCaptureOpen(false);
+  }
+
   const S = engine.S;
   const timerScale = Math.max(0.3, S / 100);
   const remaining = Math.max(0, minutes * 60 - engine.realSecondsElapsed);
@@ -201,7 +224,15 @@ function SessionInner() {
       onClick={startAudioIfNeeded}
     >
       <div className="absolute inset-0">
-        <ParticleField S={S} anim={anim} />
+        <ParticleField
+          S={S}
+          anim={anim}
+          interactive
+          onTap={() => {
+            startAudioIfNeeded();
+            audio.playBurst();
+          }}
+        />
       </div>
       <div
         className="pointer-events-none absolute inset-0"
@@ -225,6 +256,18 @@ function SessionInner() {
               </span>
             )}
             <button
+              onClick={() => setCaptureOpen(true)}
+              className="relative flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)]"
+              aria-label="Capture a thought"
+            >
+              <Lightbulb size={16} />
+              {captureCount > 0 && (
+                <span className="absolute -right-1 -top-1 flex h-4 w-4 items-center justify-center rounded-full bg-[var(--accent)] text-[9px] font-semibold text-[#1a1206]">
+                  {captureCount}
+                </span>
+              )}
+            </button>
+            <button
               onClick={() => setSettingsOpen(true)}
               className="flex h-9 w-9 cursor-pointer items-center justify-center rounded-full border border-[var(--border)] bg-[var(--card)]"
               aria-label="Sound and animation settings"
@@ -233,6 +276,22 @@ function SessionInner() {
             </button>
           </div>
         </div>
+
+        {((engine.streak > 0 && S > 15) || liveCount > 1) && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="mt-1 flex items-center justify-center gap-2 text-center text-[11px] text-[var(--muted)]"
+          >
+            {engine.streak > 0 && S > 15 && (
+              <span>
+                {engine.streak} check-in{engine.streak === 1 ? "" : "s"} in a row
+              </span>
+            )}
+            {engine.streak > 0 && S > 15 && liveCount > 1 && <span>·</span>}
+            {liveCount > 1 && <span>{liveCount} fading alongside you</span>}
+          </motion.div>
+        )}
 
         <AnimatePresence mode="wait">
           <motion.div
@@ -343,6 +402,60 @@ function SessionInner() {
             className="fixed bottom-24 left-1/2 z-30 -translate-x-1/2 rounded-full border border-[var(--border)] bg-[var(--card)] px-5 py-2.5 text-sm backdrop-blur"
           >
             {driftMsg}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      <AnimatePresence>
+        {captureOpen && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 px-4 pb-6 backdrop-blur-sm sm:items-center"
+            onClick={() => setCaptureOpen(false)}
+          >
+            <motion.div
+              initial={{ y: 30, opacity: 0 }}
+              animate={{ y: 0, opacity: 1 }}
+              exit={{ y: 20, opacity: 0 }}
+              onClick={(e) => e.stopPropagation()}
+              className="w-full max-w-sm rounded-2xl border border-[var(--border)] bg-[var(--bg)] p-5"
+            >
+              <p className="font-display text-base font-semibold">Quick, let it go</p>
+              <p className="mt-1 text-xs text-[var(--muted)]">
+                Drop the thought here so your brain can stop holding onto it. You can read these
+                back after.
+              </p>
+              <textarea
+                autoFocus
+                value={captureText}
+                onChange={(e) => setCaptureText(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    submitCapture();
+                  }
+                }}
+                rows={2}
+                placeholder="Call the dentist, check that email..."
+                className="mt-3 w-full resize-none rounded-xl border border-[var(--border)] bg-[var(--card)] px-3 py-2.5 text-sm outline-none focus:border-[var(--accent)]"
+              />
+              <div className="mt-3 flex gap-2">
+                <button
+                  onClick={() => setCaptureOpen(false)}
+                  className="flex-1 cursor-pointer rounded-full border border-[var(--border)] py-2.5 text-sm"
+                >
+                  Discard
+                </button>
+                <button
+                  onClick={submitCapture}
+                  className="flex-1 cursor-pointer rounded-full bg-[var(--accent)] py-2.5 text-sm font-medium text-[#1a1206]"
+                >
+                  Drop it, keep going
+                </button>
+              </div>
+            </motion.div>
           </motion.div>
         )}
       </AnimatePresence>

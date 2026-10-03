@@ -22,14 +22,22 @@ function colorForS(s: number, depth: number) {
   return `hsl(${hue}, ${sat}%, ${light}%)`;
 }
 
+interface Burst extends Particle {
+  life: number;
+}
+
 export default function ParticleField({
   S,
   anim,
   loop = false,
+  interactive = false,
+  onTap,
 }: {
   S: number;
   anim: AnimSetting;
   loop?: boolean;
+  interactive?: boolean;
+  onTap?: () => void;
 }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
@@ -37,6 +45,7 @@ export default function ParticleField({
   const mouseRef = useRef({ x: 0.5, y: 0.5 });
   const loopTRef = useRef(0);
   const rafRef = useRef<number | null>(null);
+  const burstsRef = useRef<Burst[]>([]);
 
   useEffect(() => {
     sRef.current = S;
@@ -86,6 +95,32 @@ export default function ParticleField({
     }
     if (anim === "full") window.addEventListener("mousemove", onMove);
 
+    function spawnBurst(x: number, y: number) {
+      const n = anim === "off" ? 0 : 18;
+      for (let i = 0; i < n; i++) {
+        const angle = (Math.PI * 2 * i) / n + Math.random() * 0.3;
+        const speed = 1.2 + Math.random() * 2.2;
+        burstsRef.current.push({
+          x,
+          y,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          r: 1.5 + Math.random() * 2,
+          hueOffset: 0,
+          depth: Math.random(),
+          life: 1,
+        });
+      }
+    }
+
+    function onDown(e: PointerEvent) {
+      if (!interactive) return;
+      const rect = canvas!.getBoundingClientRect();
+      spawnBurst(e.clientX - rect.left, e.clientY - rect.top);
+      onTap?.();
+    }
+    if (interactive) canvas.addEventListener("pointerdown", onDown);
+
     function draw() {
       if (!ctx) return;
       let s = sRef.current;
@@ -134,6 +169,23 @@ export default function ParticleField({
       }
       ctx.globalAlpha = 1;
 
+      if (burstsRef.current.length) {
+        burstsRef.current = burstsRef.current.filter((b) => b.life > 0.02);
+        for (const b of burstsRef.current) {
+          b.x += b.vx;
+          b.y += b.vy;
+          b.vx *= 0.96;
+          b.vy *= 0.96;
+          b.life *= 0.94;
+          ctx.beginPath();
+          ctx.fillStyle = "var(--accent)".startsWith("var") ? "#ff8a5b" : "#ff8a5b";
+          ctx.globalAlpha = b.life;
+          ctx.arc(b.x, b.y, b.r, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.globalAlpha = 1;
+      }
+
       rafRef.current = requestAnimationFrame(draw);
     }
     rafRef.current = requestAnimationFrame(draw);
@@ -141,9 +193,10 @@ export default function ParticleField({
     return () => {
       window.removeEventListener("resize", resize);
       window.removeEventListener("mousemove", onMove);
+      if (interactive) canvas.removeEventListener("pointerdown", onDown);
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
     };
-  }, [anim, loop]);
+  }, [anim, loop, interactive, onTap]);
 
   return <canvas ref={canvasRef} className="absolute inset-0 h-full w-full" />;
 }

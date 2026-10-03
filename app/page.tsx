@@ -23,6 +23,7 @@ export default function Landing() {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
+      {anim !== "off" && <div className="aurora-layer" />}
       <div className="pointer-events-none absolute inset-0 opacity-70">
         <ParticleField S={100} anim={anim} loop />
       </div>

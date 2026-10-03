@@ -70,6 +70,25 @@ export function getLastSession(): SessionResult | null {
   }
 }
 
+const CAPTURES_KEY_PREFIX = "fade_captures_";
+
+export function getCaptures(sessionId: string): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(CAPTURES_KEY_PREFIX + sessionId);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
+
+export function addCapture(sessionId: string, text: string) {
+  if (typeof window === "undefined") return;
+  const all = getCaptures(sessionId);
+  all.push(text);
+  localStorage.setItem(CAPTURES_KEY_PREFIX + sessionId, JSON.stringify(all));
+}
+
 export interface SoundSettings {
   masterVolume: number;
   ambientVolume: number;
