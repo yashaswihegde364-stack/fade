@@ -462,26 +462,27 @@ function SessionInner() {
 
       <AnimatePresence>
         {engine.checkin && (
-          <motion.div
+          <motion.button
             key={engine.checkin.id}
-            initial={{ opacity: 0, y: 16, scale: 0.95 }}
-            animate={{ opacity: 1, y: 0, scale: 1 }}
-            exit={{ opacity: 0, y: 10, scale: 0.95 }}
-            transition={{ type: "spring", damping: 22, stiffness: 320 }}
-            className="fixed bottom-24 right-4 z-40 w-[calc(100%-2rem)] max-w-[260px] rounded-2xl border border-[var(--border)] bg-[var(--bg)]/95 p-4 text-left shadow-xl backdrop-blur sm:right-6"
+            initial={{ opacity: 0, scale: 0.4 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.4 }}
+            transition={{ type: "spring", damping: 18, stiffness: 300 }}
+            onClick={handleAnswer}
+            aria-label="Still on it? Tap to check in"
+            className="fixed bottom-24 right-5 z-40 flex h-14 w-14 cursor-pointer items-center justify-center rounded-full bg-[var(--accent)] text-[#1a1206] shadow-lg sm:right-7"
           >
-            <p className="font-display text-sm font-semibold">Still on it?</p>
-            <div className="mt-3 flex items-center gap-2">
-              <motion.button
-                whileTap={{ scale: 0.92 }}
-                onClick={handleAnswer}
-                className="flex-1 cursor-pointer rounded-full bg-[var(--accent)] py-2.5 text-sm font-medium text-[#1a1206]"
-              >
-                Still going
-              </motion.button>
-            </div>
-            <p className="mt-2 text-[11px] text-[var(--muted)]">Space also works · fades on its own</p>
-          </motion.div>
+            <motion.span
+              className="absolute inset-0 rounded-full bg-[var(--accent)]"
+              animate={{ scale: [1, 1.6, 1], opacity: [0.5, 0, 0.5] }}
+              transition={{ duration: 1.8, repeat: Infinity, ease: "easeInOut" }}
+            />
+            <span className="relative text-[10px] font-semibold leading-tight">
+              still
+              <br />
+              on it?
+            </span>
+          </motion.button>
         )}
       </AnimatePresence>
 
