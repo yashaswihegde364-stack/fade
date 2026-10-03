@@ -583,7 +583,7 @@ function SessionInner() {
                 <div>
                   <label className="mb-1.5 block text-xs text-[var(--muted)]">Ambient sound</label>
                   <div className="flex flex-wrap gap-2">
-                    {(["brown", "pink", "rain", "drone"] as const).map((t) => (
+                    {(["brown", "pink", "rain", "drone", "waterfall", "birds"] as const).map((t) => (
                       <button
                         key={t}
                         onClick={() => {

@@ -94,7 +94,7 @@ export interface SoundSettings {
   ambientVolume: number;
   chimeVolume: number;
   muted: boolean;
-  ambientType: "brown" | "pink" | "rain" | "drone";
+  ambientType: "brown" | "pink" | "rain" | "drone" | "birds" | "waterfall";
 }
 
 export const DEFAULT_SOUND: SoundSettings = {

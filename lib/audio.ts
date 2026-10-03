@@ -115,6 +115,60 @@ class FadeAudioEngine {
       return;
     }
 
+    if (type === "waterfall") {
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuffer(ctx, "pink");
+      src.loop = true;
+      const band = ctx.createBiquadFilter();
+      band.type = "bandpass";
+      band.frequency.value = 900;
+      band.Q.value = 0.6;
+      const high = ctx.createBiquadFilter();
+      high.type = "highpass";
+      high.frequency.value = 300;
+      const lfo = ctx.createOscillator();
+      lfo.frequency.value = 0.15;
+      const lfoGain = ctx.createGain();
+      lfoGain.gain.value = 260;
+      lfo.connect(lfoGain);
+      lfoGain.connect(band.frequency);
+      lfo.start();
+      src.connect(band);
+      band.connect(high);
+      high.connect(this.ambientGain!);
+      src.start();
+      this.ambientNodes.push(src, band, high, lfo, lfoGain);
+      return;
+    }
+
+    if (type === "birds") {
+      const src = ctx.createBufferSource();
+      src.buffer = this.noiseBuffer(ctx, "pink");
+      src.loop = true;
+      const filter = ctx.createBiquadFilter();
+      filter.type = "lowpass";
+      filter.frequency.value = 800;
+      const bedGain = ctx.createGain();
+      bedGain.gain.value = 0.3;
+      src.connect(filter);
+      filter.connect(bedGain);
+      bedGain.connect(this.ambientGain!);
+      src.start();
+      this.ambientNodes.push(src, filter, bedGain);
+
+      const chirpLoop = () => {
+        if (!this.ctx) return;
+        this.playChirp();
+        const next = 500 + Math.random() * 2200;
+        chirpTimeout = setTimeout(chirpLoop, next);
+      };
+      let chirpTimeout = setTimeout(chirpLoop, 300);
+      this.ambientNodes.push({
+        disconnect: () => clearTimeout(chirpTimeout),
+      } as any);
+      return;
+    }
+
     const color = type === "rain" ? "pink" : type === "pink" ? "pink" : "brown";
     const src = ctx.createBufferSource();
     src.buffer = this.noiseBuffer(ctx, color as any);
@@ -137,6 +191,29 @@ class FadeAudioEngine {
       this.ambientNodes.push({
         disconnect: () => clearInterval(dropletInterval),
       } as any);
+    }
+  }
+
+  private playChirp() {
+    const ctx = this.ensureCtx();
+    const notes = 2 + Math.floor(Math.random() * 3);
+    const baseFreq = 2200 + Math.random() * 1800;
+    for (let i = 0; i < notes; i++) {
+      const osc = ctx.createOscillator();
+      osc.type = "sine";
+      const t0 = ctx.currentTime + i * 0.09;
+      const f0 = baseFreq + (Math.random() - 0.5) * 400;
+      osc.frequency.setValueAtTime(f0, t0);
+      osc.frequency.exponentialRampToValueAtTime(f0 * (1.25 + Math.random() * 0.3), t0 + 0.06);
+      osc.frequency.exponentialRampToValueAtTime(f0 * 0.9, t0 + 0.1);
+      const g = ctx.createGain();
+      g.gain.setValueAtTime(0, t0);
+      g.gain.linearRampToValueAtTime(0.05, t0 + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t0 + 0.12);
+      osc.connect(g);
+      g.connect(this.ambientGain!);
+      osc.start(t0);
+      osc.stop(t0 + 0.14);
     }
   }
 
