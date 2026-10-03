@@ -67,7 +67,7 @@ delete).
 
 ## Live link
 
-_placeholder — added after deploy_
+https://fade-wine-two.vercel.app
 
 ## AI tools used
 
