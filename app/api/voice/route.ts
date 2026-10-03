@@ -27,8 +27,8 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify({
         model: TTS_MODEL,
         input: cleanText,
-        voice: voice || "tara",
-        response_format: "mp3",
+        voice: voice || "autumn",
+        response_format: "wav",
       }),
       signal: controller.signal,
     });
@@ -42,7 +42,7 @@ export async function POST(request: NextRequest) {
     const audioBuffer = await res.arrayBuffer();
     return new NextResponse(audioBuffer, {
       headers: {
-        "Content-Type": "audio/mpeg",
+        "Content-Type": "audio/wav",
         "Cache-Control": "no-store",
       },
     });
