@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import ParticleField from "@/components/ParticleField";
+import Companion from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
 import { getAnimSetting } from "@/lib/storage";
 
@@ -23,17 +23,7 @@ export default function Landing() {
 
   return (
     <main className="relative min-h-screen overflow-hidden">
-      {anim !== "off" && <div className="aurora-layer" />}
-      <div className="pointer-events-none absolute inset-0 opacity-70">
-        <ParticleField S={100} anim={anim} loop />
-      </div>
-      <div
-        className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(60% 50% at 50% 0%, transparent, var(--bg) 85%), linear-gradient(to bottom, transparent, var(--bg) 100%)",
-        }}
-      />
+      {anim !== "off" && <div className="aurora-layer" style={{ opacity: 0.18 }} />}
 
       <div className="relative z-10 flex min-h-screen flex-col">
         <header className="flex items-center justify-between px-6 py-5 sm:px-10">
@@ -50,6 +40,15 @@ export default function Landing() {
         </header>
 
         <section className="mx-auto flex max-w-3xl flex-1 flex-col items-center justify-center px-6 text-center">
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9 }}
+            animate={{ opacity: 1, scale: 1 }}
+            transition={{ duration: 0.6 }}
+            className="relative h-40 w-full max-w-xs sm:h-48"
+          >
+            <Companion S={100} anim={anim} loop />
+          </motion.div>
+
           <motion.h1
             initial={{ opacity: 0, y: 16 }}
             animate={{ opacity: 1, y: 0 }}

@@ -4,7 +4,7 @@ import { Suspense, useEffect, useMemo, useRef, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { AnimatePresence, motion } from "framer-motion";
 import { Volume2, VolumeX, Pause, Play, X, ChevronDown, ChevronUp, Lightbulb } from "lucide-react";
-import ParticleField from "@/components/ParticleField";
+import Companion, { Mood } from "@/components/Companion";
 import AudioVisualizer from "@/components/AudioVisualizer";
 import { useSessionEngine } from "@/lib/useSessionEngine";
 import { getAudioEngine } from "@/lib/audio";
@@ -53,6 +53,7 @@ function SessionInner() {
   const [captureText, setCaptureText] = useState("");
   const [captureCount, setCaptureCount] = useState(0);
   const [liveCount, setLiveCount] = useState(0);
+  const [moodTrigger, setMoodTrigger] = useState<{ mood: Mood; id: number } | null>(null);
   const savedRef = useRef(false);
   const wakeLockRef = useRef<any>(null);
 
@@ -187,12 +188,14 @@ function SessionInner() {
         navigator.vibrate(40);
       } catch {}
     }
+    setMoodTrigger({ mood: "happy", id: Date.now() });
     engine.answerCheckin();
   }
 
   function handleDrift() {
     startAudioIfNeeded();
     engine.logDrift();
+    setMoodTrigger({ mood: "startled", id: Date.now() });
     setDriftMsg("Happens. Turning things back up a bit.");
     setTimeout(() => setDriftMsg(null), 2600);
   }
@@ -223,10 +226,11 @@ function SessionInner() {
       className="relative min-h-screen overflow-hidden"
       onClick={startAudioIfNeeded}
     >
-      <div className="absolute inset-0">
-        <ParticleField
+      <div className="absolute inset-0 -translate-y-[16%]">
+        <Companion
           S={S}
           anim={anim}
+          moodTrigger={moodTrigger}
           interactive
           onTap={() => {
             startAudioIfNeeded();
