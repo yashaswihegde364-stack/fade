@@ -13,14 +13,15 @@ export default function Landing() {
     null,
   );
 
+  const [anim, setAnim] = useState<ReturnType<typeof getAnimSetting>>("full");
+
   useEffect(() => {
     fetch("/api/live")
       .then((r) => r.json())
       .then((d) => setLive(d))
       .catch(() => {});
+    setAnim(getAnimSetting());
   }, []);
-
-  const anim = typeof window !== "undefined" ? getAnimSetting() : "full";
 
   return (
     <main className="relative min-h-screen overflow-hidden">
