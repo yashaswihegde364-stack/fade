@@ -111,20 +111,6 @@ export default function Landing() {
             </motion.p>
           )}
         </section>
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
-          className="mx-auto mb-10 max-w-xl rounded-2xl border border-[var(--border)] bg-[var(--card)] px-6 py-5 text-left text-sm text-[var(--muted)] backdrop-blur"
-        >
-          <p className="mb-1 font-medium text-[var(--fg)]">A note from the founder</p>
-          <p>
-            I have ADHD. Every focus app I tried either bored me or became another thing to
-            scroll. Fade gives my brain the stimulation it wants at the start, then slowly takes
-            it away.
-          </p>
-        </motion.div>
       </div>
     </main>
   );
