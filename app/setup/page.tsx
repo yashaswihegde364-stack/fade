@@ -6,7 +6,6 @@ import { motion } from "framer-motion";
 import { Plus, X, ArrowLeft, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { suggestFirstStep } from "@/lib/suggest";
-import MicButton from "@/components/MicButton";
 
 export default function Setup() {
   const router = useRouter();
@@ -91,10 +90,7 @@ export default function Setup() {
       </Link>
 
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
-        <div className="flex items-center justify-between gap-3">
-          <h1 className="font-display text-2xl font-semibold">What are you avoiding?</h1>
-          <MicButton onResult={(text) => setTask(text)} />
-        </div>
+        <h1 className="font-display text-2xl font-semibold">What are you avoiding?</h1>
         <textarea
           value={task}
           onChange={(e) => setTask(e.target.value)}
@@ -105,7 +101,6 @@ export default function Setup() {
 
         <div className="mt-7 flex flex-wrap items-center gap-3">
           <h2 className="font-display text-xl font-semibold">What&apos;s the smallest first step?</h2>
-          <MicButton onResult={(text) => setFirstStep(text)} />
           <motion.button
             whileTap={{ scale: 0.95 }}
             onClick={handleSuggest}

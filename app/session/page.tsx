@@ -617,24 +617,6 @@ function SessionInner() {
                       {sound.muted ? "Unmute" : "Mute"}
                     </button>
                   </div>
-                  <div className="mb-3 flex items-center justify-between text-sm">
-                    <span>Voice guidance</span>
-                    <button
-                      onClick={() => {
-                        const next = { ...sound, voiceGuidance: !sound.voiceGuidance };
-                        setSound(next);
-                        saveSoundSettings(next);
-                        if (next.voiceGuidance) speak("Voice guidance on.");
-                      }}
-                      className={`cursor-pointer rounded-full border px-3 py-1 text-xs ${
-                        sound.voiceGuidance
-                          ? "border-[var(--accent)] bg-[var(--accent)] text-[#1a1206]"
-                          : "border-[var(--border)]"
-                      }`}
-                    >
-                      {sound.voiceGuidance ? "On" : "Off"}
-                    </button>
-                  </div>
                   <label className="mb-1 block text-xs text-[var(--muted)]">
                     Master volume ({audio.dB()} dB)
                   </label>

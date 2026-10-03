@@ -7,7 +7,7 @@ import Companion, { Mood, Species, Accessory } from "@/components/Companion";
 import ThemeToggle from "@/components/ThemeToggle";
 import Magnetic from "@/components/Magnetic";
 import InstallButton from "@/components/InstallButton";
-import { Lightbulb, History as HistoryIcon, Mic } from "lucide-react";
+import { Lightbulb, History as HistoryIcon } from "lucide-react";
 import { getAnimSetting, getCompanionUnlock } from "@/lib/storage";
 
 export default function Landing() {
@@ -132,19 +132,6 @@ export default function Landing() {
                 Try the 90-second demo
               </Link>
             </Magnetic>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 0.35 }}
-          >
-            <Link
-              href="/talk"
-              className="mt-5 flex cursor-pointer items-center gap-1.5 text-sm text-[var(--muted)] hover:text-[var(--fg)]"
-            >
-              <Mic size={14} /> Or just talk to it
-            </Link>
           </motion.div>
 
           {live && live.total > 0 && (
