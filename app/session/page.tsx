@@ -23,6 +23,7 @@ import {
   addCapture,
   getCaptures,
   getCompanionUnlock,
+  markSoundTried,
 } from "@/lib/storage";
 import { ZONE_LABEL, zoneDepth } from "@/lib/types";
 
@@ -188,6 +189,7 @@ function SessionInner() {
     if (!audioStarted) {
       audio.start();
       setAudioStarted(true);
+      markSoundTried(sound.ambientType);
     }
   }
 
@@ -232,6 +234,12 @@ function SessionInner() {
     engine.logDrift();
     setMoodTrigger({ mood: "startled", id: Date.now() });
     setDriftMsg("Happens. Turning things back up a bit.");
+    setTimeout(() => setDriftMsg(null), 2600);
+  }
+
+  function handleCalmNow() {
+    engine.calmNow();
+    setDriftMsg("Okay. Let's go quiet, right now.");
     setTimeout(() => setDriftMsg(null), 2600);
   }
 
@@ -407,6 +415,15 @@ function SessionInner() {
             </div>
           )}
         </div>
+
+        {S > 20 && (
+          <button
+            onClick={handleCalmNow}
+            className="mb-2 cursor-pointer self-center text-xs text-[var(--muted)] underline-offset-2 hover:text-[var(--fg)] hover:underline"
+          >
+            Too much right now? Go quiet
+          </button>
+        )}
 
         <div className="flex items-center justify-between gap-3 pb-2">
           <button
@@ -642,6 +659,7 @@ function SessionInner() {
                           setSound(next);
                           saveSoundSettings(next);
                           audio.setAmbientType(t);
+                          markSoundTried(t);
                         }}
                         className={`cursor-pointer rounded-full border px-3 py-1.5 text-xs capitalize ${
                           sound.ambientType === t

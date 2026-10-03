@@ -150,6 +150,12 @@ export function useSessionEngine({ startLevel, durationSeconds, demo }: EngineOp
 
   const togglePause = useCallback(() => setPaused((p) => !p), []);
 
+  const calmNow = useCallback(() => {
+    elapsedRef.current = Math.max(elapsedRef.current, totalSessionSeconds * 0.92);
+    nextCheckinAtRef.current = null;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [totalSessionSeconds]);
+
   const realSecondsElapsed = demo ? (elapsed / 1500) * durationSeconds : elapsed;
 
   return {
@@ -165,6 +171,7 @@ export function useSessionEngine({ startLevel, durationSeconds, demo }: EngineOp
     drifts,
     curve,
     logDrift,
+    calmNow,
     checkin,
     answerCheckin,
     missCheckin,

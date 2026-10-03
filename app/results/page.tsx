@@ -179,6 +179,12 @@ function ResultsInner() {
           >
             View history
           </Link>
+          <Link
+            href="/achievements"
+            className="flex cursor-pointer items-center justify-center rounded-full px-6 py-3 text-sm text-[var(--muted)] hover:text-[var(--fg)]"
+          >
+            Achievements
+          </Link>
         </div>
       </motion.div>
     </main>

@@ -3,7 +3,7 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Trophy } from "lucide-react";
 import { getSessions, getStreak, getBestStreak, getWeeklyStats, WeeklyStats } from "@/lib/storage";
 import { SessionResult } from "@/lib/types";
 
@@ -81,10 +81,19 @@ export default function History() {
         <ArrowLeft size={15} /> Back
       </Link>
 
-      <div className="flex items-center justify-between">
+      <div className="flex items-center justify-between gap-2">
         <h1 className="font-display text-2xl font-semibold">History</h1>
-        <div className="rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-1.5 text-sm">
-          {streak} day streak
+        <div className="flex items-center gap-2">
+          <Link
+            href="/achievements"
+            className="flex cursor-pointer items-center gap-1.5 rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-1.5 text-sm transition hover:border-[var(--accent)]"
+          >
+            <Trophy size={14} />
+            <span className="hidden sm:inline">Achievements</span>
+          </Link>
+          <div className="rounded-full border border-[var(--border)] bg-[var(--card)] px-4 py-1.5 text-sm">
+            {streak} day streak
+          </div>
         </div>
       </div>
 

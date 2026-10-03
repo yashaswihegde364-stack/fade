@@ -269,3 +269,24 @@ export function getCompanionUnlock(): CompanionUnlock {
   if (unlockLevel >= 3) return "sparkle";
   return "none";
 }
+
+const SOUNDS_TRIED_KEY = "fade_sounds_tried";
+
+export function markSoundTried(ambientType: string) {
+  if (typeof window === "undefined") return;
+  const tried = getTriedSounds();
+  if (!tried.includes(ambientType)) {
+    tried.push(ambientType);
+    localStorage.setItem(SOUNDS_TRIED_KEY, JSON.stringify(tried));
+  }
+}
+
+export function getTriedSounds(): string[] {
+  if (typeof window === "undefined") return [];
+  try {
+    const raw = localStorage.getItem(SOUNDS_TRIED_KEY);
+    return raw ? JSON.parse(raw) : [];
+  } catch {
+    return [];
+  }
+}
