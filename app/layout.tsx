@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Space_Grotesk, Inter } from "next/font/google";
 import "./globals.css";
 import SplashIntro from "@/components/SplashIntro";
-import CursorGlow from "@/components/CursorGlow";
 import PageTransition from "@/components/PageTransition";
 import WelcomeNote from "@/components/WelcomeNote";
 import GlobalCapture from "@/components/GlobalCapture";
@@ -44,7 +43,6 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
       className={`${spaceGrotesk.variable} ${inter.variable} h-full antialiased`}
     >
       <body className="min-h-full bg-[var(--bg)] text-[var(--fg)] font-body">
-        <CursorGlow />
         <SplashIntro />
         <WelcomeNote />
         <GlobalCapture />
